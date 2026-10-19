@@ -112,27 +112,27 @@ footer{margin-top:40px;font-size:12px;color:var(--muted);text-transform:uppercas
       </div>
     </section>
     <section id="view-costing" hidden>
-      <p class="hint">All eight drinks at the price set above. Ingredient costs are placeholders until your Rouquette and sponsor pricing is confirmed.</p>
+      <p class="hint">All eight drinks at the price set above. Costs use De Vie Liquid Library prices where we have them (12 of 25 ingredient lines) and placeholders elsewhere. PNY's own Rouquette and sponsor pricing will replace both.</p>
       <div class="scroll"><table id="costTable"></table></div>
     </section>
   </main>
-  <footer>Casual but correct. Draft specs by Atelier De Vie. Volumes, costs and allergens are placeholders until the tasting.</footer>
+  <footer>Casual but correct. Draft specs by Atelier De Vie. Volumes and allergens are placeholders until the tasting. Costs are part Liquid Library, part placeholder.</footer>
 </div>
 
 <script>
-/* Ingredient format: [name, ml, abv %, cost EUR per litre, allergen]. Costs and volumes are placeholders. */
+/* Ingredient format: [name, ml, abv %, cost EUR per litre, allergen, fromLibrary]. Library prices come from the De Vie Liquid Library materials table (19 Oct 2026); lines without the last flag are placeholders. Volumes are placeholders. */
 var D=[
 {id:"cowboy",name:"Cowboy Old Fashioned",line:"Bourbon, Sunday BBQ syrup, smoke",glass:"Rocks glass, large cube",dil:20,garnish:0.25,
  desc:"The classic with the kitchen's Sunday BBQ flavours in the syrup, finished with smoke.",
- ing:[["Bourbon",50,40,24],["Sunday BBQ syrup",8,0,5]],
+ ing:[["Bourbon",50,40,30.25,"",1],["Sunday BBQ syrup",8,0,5]],
  steps:["Add BBQ syrup to the glass, then the bourbon and a large cube.","Stir 20 turns.","Smoke the glass or cube, garnish with a charred orange peel."]},
 {id:"flip",name:"Buttermylk Flip",line:"Rum, banana, buttermilk, egg",glass:"Coupe",dil:25,garnish:0.15,
  desc:"Rich and soft. Banana and buttermilk give it a diner-milkshake feel without the weight.",
- ing:[["Aged rum",40,40,20],["Banana syrup",15,0,6],["Buttermilk",30,0,2,"Milk"],["Whole egg",25,0,7,"Egg"]],
+ ing:[["Aged rum",40,40,20],["Banana syrup",15,0,6],["Buttermilk",30,0,2,"Milk"],["Whole egg",25,0,11.6,"Egg",1]],
  steps:["Dry shake everything without ice.","Shake again hard with ice.","Double strain into a chilled coupe, grate nutmeg."]},
 {id:"marg",name:"Spicy Marg Smash",line:"Tequila, lime, triple sec, green chilli, coriander",glass:"Rocks glass, crushed ice",dil:22,garnish:0.25,
  desc:"A smashed margarita. Green chilli and coriander muddled in for a fresh, savoury heat.",
- ing:[["Blanco tequila",40,40,26],["Triple sec",15,30,14],["Lime juice",20,0,8]],
+ ing:[["Blanco tequila",40,40,31.49,"",1],["Triple sec",15,30,12.06,"",1],["Lime juice",20,0,8]],
  steps:["Muddle green chilli and coriander in the shaker.","Add the rest, shake with ice.","Strain over crushed ice, garnish with coriander."]},
 {id:"bloody",name:"Bloody PNY",line:"Mezcal, tomato, PNY hot sauce",glass:"Highball, ice",dil:10,garnish:0.20,
  desc:"A smoky Bloody Mary built around the house hot sauce.",
@@ -140,19 +140,19 @@ var D=[
  steps:["Build over ice in a salt-rimmed glass.","Stir gently to mix.","Garnish with a pickled pepper."]},
 {id:"nygroni",name:"Nygroni",line:"Gin, paprika, Campari, sweet vermouth",glass:"Rocks glass, large cube",dil:22,garnish:0.15,
  desc:"A negroni with a paprika-infused gin. Equal parts, so it batches without fuss.",
- ing:[["Paprika-infused gin",30,40,22],["Campari",30,25,20],["Sweet vermouth",30,16,9,"Sulphites"]],
+ ing:[["Paprika-infused gin",30,40,20,"",1],["Campari",30,25,25.13,"",1],["Sweet vermouth",30,16,12.18,"Sulphites",1]],
  steps:["Stir all three over ice for 30 seconds.","Strain over a large cube.","Express an orange peel and drop it in."]},
 {id:"pylona",name:"Pylona",line:"Tequila, rosé, grapefruit soda",glass:"Wine glass, ice",dil:15,garnish:0.15,
  desc:"A long, pink and easy drink. Tequila in a Paloma format with rosé on top.",
- ing:[["Blanco tequila",35,40,26],["Rosé wine",60,12,8,"Sulphites"],["Grapefruit soda",60,0,3]],
+ ing:[["Blanco tequila",35,40,31.49,"",1],["Rosé wine",60,12,3.36,"Sulphites",1],["Grapefruit soda",60,0,4.63,"",1]],
  steps:["Build tequila and rosé over ice.","Top with grapefruit soda.","Garnish with a grapefruit wedge."]},
 {id:"sprytz",name:"Sprytz",line:"Blanche de Normandie, white wine, cucumber, soda",glass:"Wine glass, ice",dil:10,garnish:0.15,
  desc:"A low-ABV spritz built on a Normandy white beer and white wine.",
- ing:[["Blanche de Normandie",60,4.5,4,"Gluten"],["White wine",60,12,9,"Sulphites"],["Cucumber juice",15,0,5],["Soda water",30,0,1]],
+ ing:[["Blanche de Normandie",60,4.5,4,"Gluten"],["White wine",60,12,9,"Sulphites"],["Cucumber juice",15,0,5],["Soda water",30,0,0.01,"",1]],
  steps:["Build beer, wine and cucumber juice over ice.","Top with soda.","Garnish with a cucumber ribbon."]},
 {id:"tynni",name:"Chilli-Pickle-Tynni",line:"Vodka, dry vermouth, PNY guindilla chilli pickle brine",glass:"Frozen coupe",dil:10,garnish:0.30,
  desc:"A fiery dry martini. Poured from the freezer into a frozen glass. Crisp, savoury, spicy and dangerously drinkable.",
- ing:[["Vodka",50,40,16],["Dry vermouth",10,16,9,"Sulphites"],["PNY guindilla pickle brine",10,0,2]],
+ ing:[["Vodka",50,40,15.72,"",1],["Dry vermouth",10,16,9,"Sulphites"],["PNY guindilla pickle brine",10,0,2]],
  steps:["Keep the pre-mixed bottle in the freezer.","Pour straight into a frozen coupe.","Garnish with a guindilla chilli."]}
 ];
 var price=11, cur="cowboy", servings=20;
@@ -171,13 +171,13 @@ function renderSheet(){var d=D.filter(function(x){return x.id===cur})[0],r=calc(
  var h='<h2>'+esc(d.name)+'</h2><p class="sub">'+esc(d.desc)+'</p><div class="chips"><span class="chip">'+esc(d.glass)+'</span>'+r.alg.map(function(a){return'<span class="chip alg">'+a+'</span>'}).join("")+'</div>';
  h+='<dl class="stats"><div class="stat"><dt>ABV served</dt><dd>'+r.abv.toFixed(1)+'%</dd></div><div class="stat"><dt>Serve volume</dt><dd>'+Math.round(r.total)+' ml</dd></div><div class="stat"><dt>Cost per drink</dt><dd>'+eur(r.cost)+'</dd></div><div class="stat"><dt>Food cost</dt><dd>'+r.pct.toFixed(1)+'%<span class="pill '+s[0]+'">'+s[1]+'</span></dd></div></dl>';
  h+='<div class="cols"><div><h3>Spec</h3><div class="scroll"><table><tr><th>Ingredient</th><th class="r">ml</th><th class="r">ABV</th><th class="r">Cost</th></tr>';
- d.ing.forEach(function(i){h+='<tr><td>'+esc(i[0])+'</td><td class="r">'+i[1]+'</td><td class="r">'+(i[2]?i[2]+'%':'')+'</td><td class="r">'+(i[1]*i[3]/1000).toFixed(2)+'</td></tr>'});
+ d.ing.forEach(function(i){h+='<tr><td>'+esc(i[0])+(i[5]?'':' *')+'</td><td class="r">'+i[1]+'</td><td class="r">'+(i[2]?i[2]+'%':'')+'</td><td class="r">'+(i[1]*i[3]/1000).toFixed(2)+'</td></tr>'});
  h+='<tr><td>Dilution</td><td class="r">'+d.dil+'</td><td class="r"></td><td class="r"></td></tr><tr><td>Garnish</td><td class="r"></td><td class="r"></td><td class="r">'+d.garnish.toFixed(2)+'</td></tr><tr class="tot"><td>Total</td><td class="r">'+Math.round(r.total)+'</td><td class="r">'+r.abv.toFixed(1)+'%</td><td class="r">'+r.cost.toFixed(2)+'</td></tr></table></div>';
  h+='<h3 style="margin-top:22px">Method</h3><ol class="method">'+d.steps.map(function(x){return'<li>'+esc(x)+'</li>'}).join("")+'</ol></div>';
  h+='<div><h3>Batch for service</h3><div class="batch"><label for="serv">Servings</label><input type="number" id="serv" min="1" max="2000" value="'+servings+'"><button data-s="10">10</button><button data-s="50">50</button><button data-s="100">100</button></div><div class="scroll"><table><tr><th>Ingredient</th><th class="r">Quantity</th></tr>';
  d.ing.forEach(function(i){h+='<tr><td>'+esc(i[0])+'</td><td class="r">'+fmt(i[1]*servings)+'</td></tr>'});
  h+='<tr class="tot"><td>Batch cost</td><td class="r">'+eur(r.cost*servings)+'</td></tr></table></div><p class="note">Dilution is added at service, not in the batch. Garnish is counted in the cost.</p></div></div>';
- h+='<p class="note">Draft spec for discussion. Volumes, costs and allergens are placeholders until the tasting.</p>';
+ h+='<p class="note">Draft spec for discussion. Costs come from the De Vie Liquid Library where available; * marks a placeholder price. Volumes and allergens are placeholders until the tasting.</p>';
  document.getElementById("sheet").innerHTML=h}
 function renderCost(){var h='<tr><th>Drink</th><th class="r">ABV</th><th class="r">Cost</th><th class="r">Price HT</th><th class="r">Food cost</th><th class="r">Margin</th><th>Status</th></tr>',tc=0,tp=0;
  D.forEach(function(d){var r=calc(d),s=st(r.pct);tc+=r.cost;tp+=r.ht;
