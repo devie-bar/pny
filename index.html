@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PNY Liquid Library</title>
+<meta name="description" content="Draft cocktail specs, batching and costing for the PNY menu, by Atelier De Vie.">
+<link rel="icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,300..900&display=swap">
+<style>
+/* Layout: PNY grey ground, big lowercase green headline, outlined drink pills on the left, a working spec sheet on the right. Colours and logo taken from the PNY Initial Ideas deck. */
+:root{
+  --bg:#E3E2DE; --surface:#EFEEEA; --fg:#12301F; --green:#248E5B; --green-ink:#1B7447; --muted:#4F6B5B; --line:#B9CFC2;
+  --good:#1B7447; --warn:#9A5A07; --bad:#B3261E; --good-bg:#CDE8D9; --warn-bg:#F3E1BF; --bad-bg:#F2D2CF;
+  --display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0C2318; --surface:#12301F; --fg:#E7F2EB; --green:#3FB87C; --green-ink:#6FD6A2; --muted:#93B7A3; --line:#245038;
+  --good:#6FD6A2; --warn:#F0B866; --bad:#FF958C; --good-bg:#16452D; --warn-bg:#40300F; --bad-bg:#442220; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0C2318; --surface:#12301F; --fg:#E7F2EB; --green:#3FB87C; --green-ink:#6FD6A2; --muted:#93B7A3; --line:#245038;
+  --good:#6FD6A2; --warn:#F0B866; --bad:#FF958C; --good-bg:#16452D; --warn-bg:#40300F; --bad-bg:#442220; color-scheme:dark}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--display);font-size:15px;line-height:1.5;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:max(20px,env(safe-area-inset-top,0px)) max(48px,env(safe-area-inset-bottom,0px))}
+.wrap{max-width:1120px;margin:0 auto}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--green);outline-offset:3px}
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px 32px;padding:8px 0 26px}
+.top img{display:block;width:clamp(120px,18vw,180px);height:auto}
+h1{margin:18px 0 0;font-weight:800;font-stretch:78%;font-size:clamp(52px,10vw,120px);line-height:.88;letter-spacing:-0.045em;color:var(--green)}
+.by{margin:0;text-transform:uppercase;letter-spacing:.1em;font-size:12px;color:var(--green-ink);text-align:right}
+.by b{display:block;font-weight:700;margin-top:2px}
+.draft{display:inline-block;margin-top:10px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;border:1px solid var(--green);color:var(--green-ink);padding:2px 9px;border-radius:99px}
+.tabs{display:flex;gap:6px;margin:6px 0 20px;flex-wrap:wrap}
+.tab{background:none;border:1.5px solid var(--green);color:var(--green-ink);border-radius:99px;padding:7px 18px;cursor:pointer;font-weight:700;font-stretch:80%;letter-spacing:.02em;text-transform:uppercase;font-size:14px}
+.tab[aria-selected="true"]{background:var(--green);color:#fff}
+.price{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin:0 0 22px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.price input{accent-color:var(--green);width:160px}
+.price b{color:var(--fg);font-variant-numeric:tabular-nums}
+.grid{display:grid;grid-template-columns:minmax(0,320px) minmax(0,1fr);gap:32px}
+@media(max-width:820px){.grid{grid-template-columns:minmax(0,1fr);gap:24px}}
+.sec{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:0 0 10px}
+.list{display:flex;flex-direction:column;gap:8px;margin:0 0 22px;padding:0;list-style:none}
+.item{display:flex;justify-content:space-between;align-items:center;gap:12px;width:100%;text-align:left;background:none;border:1.5px solid var(--green);color:var(--green-ink);border-radius:99px;padding:8px 18px;cursor:pointer;font-weight:700;font-stretch:80%;font-size:15px;text-transform:uppercase;letter-spacing:.01em}
+.item:hover{background:var(--surface)}
+.item[aria-current="true"]{background:var(--green);color:#fff}
+.item .m{font-weight:500;font-size:12px;font-stretch:100%;font-variant-numeric:tabular-nums;white-space:nowrap;opacity:.85}
+.slot{border:1.5px dashed var(--line);color:var(--muted);border-radius:99px;padding:8px 18px;font-size:13px;text-transform:uppercase;letter-spacing:.06em}
+.sheet{background:var(--surface);border-radius:14px;padding:28px max(18px,3vw);min-width:0}
+.sheet h2{margin:0 0 6px;font-weight:800;font-stretch:78%;font-size:clamp(38px,6vw,64px);line-height:.92;letter-spacing:-0.04em;color:var(--green);text-wrap:balance}
+.sub{color:var(--muted);margin:10px 0 18px;font-size:15px;max-width:60ch}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 22px}
+.chip{font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:3px 10px;border-radius:99px;border:1px solid var(--line);color:var(--muted)}
+.chip.alg{border-color:var(--warn);color:var(--warn)}
+.stats{display:flex;flex-wrap:wrap;gap:18px 36px;margin:0 0 26px;padding:14px 0;border-block:1px solid var(--line)}
+.stat dt{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.stat dd{margin:2px 0 0;font-weight:800;font-stretch:80%;font-size:32px;letter-spacing:-0.03em;font-variant-numeric:tabular-nums;color:var(--green-ink)}
+.pill{font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:2px 9px;border-radius:99px;font-weight:700;font-stretch:100%;vertical-align:middle;margin-left:8px;letter-spacing:.08em}
+.ok{background:var(--good-bg);color:var(--good)}.wn{background:var(--warn-bg);color:var(--warn)}.hi{background:var(--bad-bg);color:var(--bad)}
+.cols{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:28px}
+@media(max-width:700px){.cols{grid-template-columns:minmax(0,1fr)}}
+h3{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:0 0 8px}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:7px 8px 7px 0;border-bottom:1px solid var(--line);font-size:14px;white-space:nowrap}
+th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+td.r,th.r{text-align:right;padding-right:0;padding-left:10px}
+.batch{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 12px;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.batch input[type=number]{width:84px;padding:6px 10px;border:1.5px solid var(--line);border-radius:99px;background:var(--bg)}
+.batch button{border:1.5px solid var(--green);background:none;color:var(--green-ink);border-radius:99px;padding:5px 12px;cursor:pointer;font-weight:600}
+.batch button:hover{background:var(--green);color:#fff}
+.method{margin:0;padding:0;list-style:none;counter-reset:s}
+.method li{counter-increment:s;padding:7px 0 7px 30px;position:relative;border-bottom:1px solid var(--line);font-size:14px}
+.method li:before{content:counter(s);position:absolute;left:0;top:7px;color:var(--green);font-weight:800;font-variant-numeric:tabular-nums}
+.note{font-size:12px;color:var(--muted);margin:18px 0 0;max-width:70ch}
+.tot td{font-weight:700;border-bottom:0}
+.hint{color:var(--muted);font-size:13px;max-width:62ch;margin:0 0 16px}
+footer{margin-top:40px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <img src="logo.png" alt="PNY" width="180" height="80">
+      <h1>liquid library.</h1>
+      <span class="draft">Draft for discussion</span>
+    </div>
+    <p class="by">Cocktail menu, initial ideas<b>By Atelier De Vie</b></p>
+  </header>
+
+  <main>
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" id="tab-recipes" aria-selected="true" data-tab="recipes">Recipes</button>
+      <button class="tab" role="tab" id="tab-costing" aria-selected="false" data-tab="costing">Menu costing</button>
+    </div>
+    <div class="price">
+      <label for="price">Menu price (TTC)</label>
+      <input type="range" id="price" min="10" max="12" step="0.5" value="11">
+      <b id="priceOut">11.00 EUR</b>
+      <span>Target food cost 25% excl. VAT</span>
+    </div>
+    <section id="view-recipes">
+      <div class="grid">
+        <nav aria-label="Menu"><div id="lists"></div></nav>
+        <article class="sheet" id="sheet" aria-live="polite"></article>
+      </div>
+    </section>
+    <section id="view-costing" hidden>
+      <p class="hint">All eight drinks at the price set above. Ingredient costs are placeholders until your Rouquette and sponsor pricing is confirmed.</p>
+      <div class="scroll"><table id="costTable"></table></div>
+    </section>
+  </main>
+  <footer>Casual but correct. Draft specs by Atelier De Vie. Volumes, costs and allergens are placeholders until the tasting.</footer>
+</div>
+
+<script>
+/* Ingredient format: [name, ml, abv %, cost EUR per litre, allergen]. Costs and volumes are placeholders. */
+var D=[
+{id:"cowboy",name:"Cowboy Old Fashioned",line:"Bourbon, Sunday BBQ syrup, smoke",glass:"Rocks glass, large cube",dil:20,garnish:0.25,
+ desc:"The classic with the kitchen's Sunday BBQ flavours in the syrup, finished with smoke.",
+ ing:[["Bourbon",50,40,24],["Sunday BBQ syrup",8,0,5]],
+ steps:["Add BBQ syrup to the glass, then the bourbon and a large cube.","Stir 20 turns.","Smoke the glass or cube, garnish with a charred orange peel."]},
+{id:"flip",name:"Buttermylk Flip",line:"Rum, banana, buttermilk, egg",glass:"Coupe",dil:25,garnish:0.15,
+ desc:"Rich and soft. Banana and buttermilk give it a diner-milkshake feel without the weight.",
+ ing:[["Aged rum",40,40,20],["Banana syrup",15,0,6],["Buttermilk",30,0,2,"Milk"],["Whole egg",25,0,7,"Egg"]],
+ steps:["Dry shake everything without ice.","Shake again hard with ice.","Double strain into a chilled coupe, grate nutmeg."]},
+{id:"marg",name:"Spicy Marg Smash",line:"Tequila, lime, triple sec, green chilli, coriander",glass:"Rocks glass, crushed ice",dil:22,garnish:0.25,
+ desc:"A smashed margarita. Green chilli and coriander muddled in for a fresh, savoury heat.",
+ ing:[["Blanco tequila",40,40,26],["Triple sec",15,30,14],["Lime juice",20,0,8]],
+ steps:["Muddle green chilli and coriander in the shaker.","Add the rest, shake with ice.","Strain over crushed ice, garnish with coriander."]},
+{id:"bloody",name:"Bloody PNY",line:"Mezcal, tomato, PNY hot sauce",glass:"Highball, ice",dil:10,garnish:0.20,
+ desc:"A smoky Bloody Mary built around the house hot sauce.",
+ ing:[["Mezcal",40,45,32],["Tomato juice",90,0,3],["PNY hot sauce",5,0,12]],
+ steps:["Build over ice in a salt-rimmed glass.","Stir gently to mix.","Garnish with a pickled pepper."]},
+{id:"nygroni",name:"Nygroni",line:"Gin, paprika, Campari, sweet vermouth",glass:"Rocks glass, large cube",dil:22,garnish:0.15,
+ desc:"A negroni with a paprika-infused gin. Equal parts, so it batches without fuss.",
+ ing:[["Paprika-infused gin",30,40,22],["Campari",30,25,20],["Sweet vermouth",30,16,9,"Sulphites"]],
+ steps:["Stir all three over ice for 30 seconds.","Strain over a large cube.","Express an orange peel and drop it in."]},
+{id:"pylona",name:"Pylona",line:"Tequila, rosé, grapefruit soda",glass:"Wine glass, ice",dil:15,garnish:0.15,
+ desc:"A long, pink and easy drink. Tequila in a Paloma format with rosé on top.",
+ ing:[["Blanco tequila",35,40,26],["Rosé wine",60,12,8,"Sulphites"],["Grapefruit soda",60,0,3]],
+ steps:["Build tequila and rosé over ice.","Top with grapefruit soda.","Garnish with a grapefruit wedge."]},
+{id:"sprytz",name:"Sprytz",line:"Blanche de Normandie, white wine, cucumber, soda",glass:"Wine glass, ice",dil:10,garnish:0.15,
+ desc:"A low-ABV spritz built on a Normandy white beer and white wine.",
+ ing:[["Blanche de Normandie",60,4.5,4,"Gluten"],["White wine",60,12,9,"Sulphites"],["Cucumber juice",15,0,5],["Soda water",30,0,1]],
+ steps:["Build beer, wine and cucumber juice over ice.","Top with soda.","Garnish with a cucumber ribbon."]},
+{id:"tynni",name:"Chilli-Pickle-Tynni",line:"Vodka, dry vermouth, PNY guindilla chilli pickle brine",glass:"Frozen coupe",dil:10,garnish:0.30,
+ desc:"A fiery dry martini. Poured from the freezer into a frozen glass. Crisp, savoury, spicy and dangerously drinkable.",
+ ing:[["Vodka",50,40,16],["Dry vermouth",10,16,9,"Sulphites"],["PNY guindilla pickle brine",10,0,2]],
+ steps:["Keep the pre-mixed bottle in the freezer.","Pour straight into a frozen coupe.","Garnish with a guindilla chilli."]}
+];
+var price=11, cur="cowboy", servings=20;
+function calc(d){var vol=0,al=0,cost=0,alg={};d.ing.forEach(function(i){vol+=i[1];al+=i[1]*i[2];cost+=i[1]*i[3]/1000;if(i[4])alg[i[4]]=1});
+ var total=vol+d.dil,abv=al/total,c=cost+d.garnish,vat=abv>0.05?0.2:0.1,ht=price/(1+vat);
+ return{total:total,abv:abv,cost:c,ht:ht,pct:c/ht*100,margin:(1-c/ht)*100,alg:Object.keys(alg)}}
+function st(p){return p<=25?["ok","On target"]:p<=30?["wn","Near limit"]:["hi","Over target"]}
+function eur(n){return n.toFixed(2)+" EUR"}
+function fmt(ml){return ml>=1000?(ml/1000).toFixed(2).replace(/\.?0+$/,"")+" L":(Math.round(ml*10)/10)+" ml"}
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;")}
+function renderList(){var h='<h2 class="sec">On the menu, 8 drinks</h2><ul class="list">';
+ D.forEach(function(d){var r=calc(d);h+='<li><button class="item" data-id="'+d.id+'"'+(d.id===cur?' aria-current="true"':'')+'><span>'+esc(d.name)+'</span><span class="m">'+r.abv.toFixed(0)+'%</span></button></li>'});
+ h+='<li><div class="slot">Zero alcohol, to be developed</div></li><li><div class="slot">Zero alcohol, to be developed</div></li></ul>';
+ document.getElementById("lists").innerHTML=h}
+function renderSheet(){var d=D.filter(function(x){return x.id===cur})[0],r=calc(d),s=st(r.pct);
+ var h='<h2>'+esc(d.name)+'</h2><p class="sub">'+esc(d.desc)+'</p><div class="chips"><span class="chip">'+esc(d.glass)+'</span>'+r.alg.map(function(a){return'<span class="chip alg">'+a+'</span>'}).join("")+'</div>';
+ h+='<dl class="stats"><div class="stat"><dt>ABV served</dt><dd>'+r.abv.toFixed(1)+'%</dd></div><div class="stat"><dt>Serve volume</dt><dd>'+Math.round(r.total)+' ml</dd></div><div class="stat"><dt>Cost per drink</dt><dd>'+eur(r.cost)+'</dd></div><div class="stat"><dt>Food cost</dt><dd>'+r.pct.toFixed(1)+'%<span class="pill '+s[0]+'">'+s[1]+'</span></dd></div></dl>';
+ h+='<div class="cols"><div><h3>Spec</h3><div class="scroll"><table><tr><th>Ingredient</th><th class="r">ml</th><th class="r">ABV</th><th class="r">Cost</th></tr>';
+ d.ing.forEach(function(i){h+='<tr><td>'+esc(i[0])+'</td><td class="r">'+i[1]+'</td><td class="r">'+(i[2]?i[2]+'%':'')+'</td><td class="r">'+(i[1]*i[3]/1000).toFixed(2)+'</td></tr>'});
+ h+='<tr><td>Dilution</td><td class="r">'+d.dil+'</td><td class="r"></td><td class="r"></td></tr><tr><td>Garnish</td><td class="r"></td><td class="r"></td><td class="r">'+d.garnish.toFixed(2)+'</td></tr><tr class="tot"><td>Total</td><td class="r">'+Math.round(r.total)+'</td><td class="r">'+r.abv.toFixed(1)+'%</td><td class="r">'+r.cost.toFixed(2)+'</td></tr></table></div>';
+ h+='<h3 style="margin-top:22px">Method</h3><ol class="method">'+d.steps.map(function(x){return'<li>'+esc(x)+'</li>'}).join("")+'</ol></div>';
+ h+='<div><h3>Batch for service</h3><div class="batch"><label for="serv">Servings</label><input type="number" id="serv" min="1" max="2000" value="'+servings+'"><button data-s="10">10</button><button data-s="50">50</button><button data-s="100">100</button></div><div class="scroll"><table><tr><th>Ingredient</th><th class="r">Quantity</th></tr>';
+ d.ing.forEach(function(i){h+='<tr><td>'+esc(i[0])+'</td><td class="r">'+fmt(i[1]*servings)+'</td></tr>'});
+ h+='<tr class="tot"><td>Batch cost</td><td class="r">'+eur(r.cost*servings)+'</td></tr></table></div><p class="note">Dilution is added at service, not in the batch. Garnish is counted in the cost.</p></div></div>';
+ h+='<p class="note">Draft spec for discussion. Volumes, costs and allergens are placeholders until the tasting.</p>';
+ document.getElementById("sheet").innerHTML=h}
+function renderCost(){var h='<tr><th>Drink</th><th class="r">ABV</th><th class="r">Cost</th><th class="r">Price HT</th><th class="r">Food cost</th><th class="r">Margin</th><th>Status</th></tr>',tc=0,tp=0;
+ D.forEach(function(d){var r=calc(d),s=st(r.pct);tc+=r.cost;tp+=r.ht;
+  h+='<tr><td>'+esc(d.name)+'</td><td class="r">'+r.abv.toFixed(1)+'%</td><td class="r">'+r.cost.toFixed(2)+'</td><td class="r">'+r.ht.toFixed(2)+'</td><td class="r">'+r.pct.toFixed(1)+'%</td><td class="r">'+r.margin.toFixed(1)+'%</td><td><span class="pill '+s[0]+'" style="margin:0">'+s[1]+'</span></td></tr>'});
+ var n=D.length;h+='<tr class="tot"><td>Menu average</td><td></td><td class="r">'+(tc/n).toFixed(2)+'</td><td class="r">'+(tp/n).toFixed(2)+'</td><td class="r">'+(tc/tp*100).toFixed(1)+'%</td><td class="r">'+((1-tc/tp)*100).toFixed(1)+'%</td><td></td></tr>';
+ document.getElementById("costTable").innerHTML=h}
+function all(){renderList();renderSheet();renderCost();document.getElementById("priceOut").textContent=price.toFixed(2)+" EUR"}
+document.addEventListener("click",function(e){
+ var b=e.target.closest("[data-id]");if(b){cur=b.getAttribute("data-id");renderList();renderSheet();return}
+ var s=e.target.closest("[data-s]");if(s){servings=+s.getAttribute("data-s");renderSheet();return}
+ var t=e.target.closest("[data-tab]");if(t){var k=t.getAttribute("data-tab");
+  document.querySelectorAll(".tab").forEach(function(x){x.setAttribute("aria-selected",x===t?"true":"false")});
+  document.getElementById("view-recipes").hidden=k!=="recipes";document.getElementById("view-costing").hidden=k!=="costing"}});
+document.addEventListener("input",function(e){
+ if(e.target.id==="serv"){var v=parseInt(e.target.value,10);if(v>0){servings=v;renderSheet();var n=document.getElementById("serv");n.focus();n.setSelectionRange(n.value.length,n.value.length)}}
+ if(e.target.id==="price"){price=parseFloat(e.target.value);all()}});
+all();
+</script>
+</body>
+</html>
